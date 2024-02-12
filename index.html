@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <head>
   <style> body { margin: 0; } </style>
 
@@ -5,52 +6,92 @@
 </head>
 
 <body>
-    <div class="card my-2">
-    <div class="card-header">
-      Load transaction data
+  <nav class="navbar bg-body-tertiary">
+    <div class="container">
+      <a class="navbar-brand" href="#">Bitcoin Transaction Family Tree</a>
     </div>
-    <div class="card-body">
+  </nav>
+
+  <div class="container">
+    <ul class="nav nav-underline my-2">
+      <li class="nav-item">
+        <a class="nav-link" onclick="selectSourceTab('tab-api')"  aria-current="page" href="#">Block via API</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" onclick="selectSourceTab('tab-getblock-json')" href="#">getblock JSON file</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" onclick="selectSourceTab('tab-tx-set')" href="#">Transaction set</a>
+      </li>
+    </ul>
+    <div id="tab-api" class="sourceTab">
+      <div class="input-group mb-3">
+        <input type="text" id="input-api-hash" class="form-control" placeholder="block hash" value="00000000000000000002cc370b31963502d77303b9b5d1eb8024523e28cf6a9a" aria-label="block hash"  minlength="64" maxlength="64"  aria-describedby="button-load-api-hash">
+        <button class="btn btn-primary" type="button" id="button-load-api-hash">load from API</button>
+      </div>
+    </div>
+
+    <div id="tab-getblock-json" class="sourceTab" style="display:none">
       <div class="container text-center">
         <div class="row row-cols-1 row-cols-md-3">
           <div class="col my-2">
-            <fieldset style="border: 1px dashed black;" class="text-center mb-3 p-4">
-              <p class="small my-2">Drag &amp; Drop <br>getblock json</p>
-              <input id="selectFiles" class="position-absolute invisible" type="file" accept="application/json" />
-              <label class="btn btn-outline-primary" for="selectFiles">Choose JSON file</label>
-            </fieldset>
+            <input id="selectFiles" class="position-absolute invisible" type="file" accept="application/json" />
+            <label class="btn btn-outline-primary" for="selectFiles">Choose JSON file</label>
           </div>
           <div class="col my-2">
-            <input type="text" class="form-control" id="url" placeholder="https://..." />
-            <button class="btn btn-outline-primary" id="load-url">fetch from URL</button>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" placeholder="https://..." aria-label="getblock.json URL" aria-describedby="button-load-getblock">
+              <button class="btn btn-outline-secondary" type="button" id="button-load-getblock">Load getblock JSON</button>
+            </div>
           </div>
           <div class="col my-2">
-            <ol class="list-group">
-              <li class="list-group-item d-flex justify-content-between align-items-start">
-                <div>
-                  Block #788839
-                </div>
-                <button class="btn btn-outline-primary" onclick="loadFromURL('https://gist.githubusercontent.com/0xB10C/41fca2e120447e84a45408d30f0322fd/raw/a7b333e4e0f699be93c518dcfc0c6bc702cb861c/788839.json')">load</button>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-start">
-                <div>
-                  Block #827504
-                </div>
-                <button class="btn btn-outline-primary" onclick="loadFromURL('https://gist.githubusercontent.com/0xB10C/41fca2e120447e84a45408d30f0322fd/raw/a7b333e4e0f699be93c518dcfc0c6bc702cb861c/827504.json')">load</button>
-              </li>
-            </ol>
+            <div class="input-group">
+              <select class="form-select" id="select-example-block" aria-label="Example select with button addon">
+                <option value="https://gist.githubusercontent.com/0xB10C/41fca2e120447e84a45408d30f0322fd/raw/a7b333e4e0f699be93c518dcfc0c6bc702cb861c/788839.json">#788839</option>
+                <option value="https://gist.githubusercontent.com/0xB10C/41fca2e120447e84a45408d30f0322fd/raw/a7b333e4e0f699be93c518dcfc0c6bc702cb861c/827504.json">#827504</option>
+              </select>
+              <button class="btn btn-outline-secondary" onclick="loadFromURL(document.getElementById('select-example-block').value)" type="button">Load example block</button>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
+    <div id="tab-tx-set" class="sourceTab" style="display:none">
+      <p>not implemented</p>
     </div>
   </div>
-  <input type="text" id="txid" name="txid" required minlength="4" maxlength="64" size="10" />
+  <!--input type="text" id="txid" name="txid" required minlength="4" maxlength="64" size="10" /-->
 
   <div id="graph"></div>
 
+  <script type="module">
+    import init, { graphdata_from_hexblock } from "./wasm-rawtx/pkg/wasm_rawtx.js";
+    init().then(() => {
+      document.getElementById("button-load-api-hash").addEventListener("click", () => { 
+        let hash = document.getElementById("input-api-hash").value;
+        fetch(`https://blockchain.info/rawblock/${hash}?format=hex&cors=true`)
+          .then(response => response.text())
+          .then(hex => {
+              let data = graphdata_from_hexblock(hex);
+              draw(data)
+            }
+          );
+      });
+    });
+  </script>
 
   <script>
     var g;
+
+    function selectSourceTab(tab) {
+      var i;
+      var x = document.getElementsByClassName("sourceTab");
+      for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
+      }
+      document.getElementById(tab).style.display = "block";
+    }
 
 
     // document.getElementById("txid").addEventListener("input", (event) => {

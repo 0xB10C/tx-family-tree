@@ -11,12 +11,8 @@ function loadFromURL(url) {
     });
 }
 
+
 function processBlock(block) {
-  stratify = d3.stratify()
-    .id(d => d[childColumn])
-    .parentId(d => d[parentColumn])
-
-
   let nodes = [];
   let knownTxids = new Set();
   let links = [];

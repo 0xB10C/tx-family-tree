@@ -12,7 +12,9 @@ function draw(data) {
       .d3Force('y', d3.forceY())
       .backgroundColor('#101020')
       .onNodeClick(node => window.open(`https://mempool.space/tx/${node.id}`, '_blank'))
-      .linkColor(() => 'rgba(255,255,255,0.5)')
+      .nodeAutoColorBy("version")
+      .linkLabel("intype")
+      .linkAutoColorBy("intype")
       .onNodeDragEnd(node => {
         node.fx = node.x;
         node.fy = node.y;
