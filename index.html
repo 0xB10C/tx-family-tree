@@ -58,15 +58,34 @@
     </div>
 
     <div id="tab-tx-set" class="sourceTab" style="display:none">
-      <p>not implemented</p>
+      <form>
+        <div class="mb-3">
+          <label for="tx-set" class="form-label">Transaction set</label>
+          <textarea class="form-control" name="tx-set" aria-describedby="emailHelp" placeholder="0100000001e56aa51a01d51e559b9ab3b666b0aac24291142b0d3b2c52f7f9c4a529f9fb3203000.." id="area-txset" style="height: 100px"></textarea>
+          <div class="form-text">One hex encoded transaction per line</div>
+          <details>
+            <summary>sample</summary>
+            <code>
+02000000000101d255cb39a230a6bfc763febce0b03e7c946e7923cd645c4849e474f4cd47fe850000000000fdffffff02782f3c000000000016001498779af6da1c0b3bf20be047a1b6e3491ab991790000000000000000156a5d1214011400ff7f818cec82d08bc0a88281d2150247304402203728668174b214ef6c93cd1c28167ff4d9353717d102fe30752503cd9068ac22022050bbcd3974547e5957eb7cc03303dc233a5e1f9ee2f41d76099915dd9dea34f40121024f5b5d052d4d76b514bacbd8407e6297f4043739e9f359ee3c9baa716332aafc00000000
+02000000000101528a83d6ee477e1df7277bf62230cc23e8ea52dae7b7d50f2d95e98852417c4b0000000000fdffffff0221303c000000000016001498779af6da1c0b3bf20be047a1b6e3491ab991790000000000000000156a5d1214011400ff7f818cec82d08bc0a88281d215024730440220662e43ca007deaf680f39fd3f059927b185b1f46901830816b2329583fc62920022010b352e34299ba73b41fcea4fb5265bd4b2c7183387d417da86bc0e2b995aed40121024f5b5d052d4d76b514bacbd8407e6297f4043739e9f359ee3c9baa716332aafc00000000
+02000000000101fc056329cef165bcadfb0b92465952a7b663a8deb929edcc302f9bf7a1443ec60000000000fdffffff02cf2e3c000000000016001498779af6da1c0b3bf20be047a1b6e3491ab991790000000000000000156a5d1214011400ff7f818cec82d08bc0a88281d21502483045022100c126ab609763a30476720defb4b63de8de4f26c461cde45902ee951afa974664022072b81ceb7f5fb48b88a81ad4398b03c185582b8b7d6bf1b9c681562f12b225cc0121024f5b5d052d4d76b514bacbd8407e6297f4043739e9f359ee3c9baa716332aafc00000000
+            </code>
+          </details>
+        </div>
+        <button class="btn btn-primary" id="button-process-txset" type="button">process</button>
+      </form>
+      <div class="form-floating">
+       
+      </div>
+      
     </div>
   </div>
-  <!--input type="text" id="txid" name="txid" required minlength="4" maxlength="64" size="10" /-->
 
+  <span>arrows show <code>child</code> -> <code>parent</code> relationship (c depends on p)</span>
   <div id="graph"></div>
 
   <script type="module">
-    import init, { graphdata_from_hexblock } from "./wasm-rawtx/pkg/wasm_rawtx.js";
+    import init, { graphdata_from_hexblock, graphdata_from_hextxlist } from "./wasm-rawtx/pkg/wasm_rawtx.js";
     init().then(() => {
       document.getElementById("button-load-api-hash").addEventListener("click", () => { 
         let hash = document.getElementById("input-api-hash").value;
@@ -77,6 +96,15 @@
               draw(data)
             }
           );
+      });
+
+      document.getElementById("button-process-txset").addEventListener("click", () => { 
+        const area_text = document.getElementById("area-txset").value;
+        const hex_txns = area_text.split("\n")
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+        const data = graphdata_from_hextxlist(hex_txns);
+        draw(data)
       });
     });
   </script>
@@ -92,19 +120,6 @@
       }
       document.getElementById(tab).style.display = "block";
     }
-
-
-    // document.getElementById("txid").addEventListener("input", (event) => {
-    //   if (event.target.value.length > 12) {
-    //     for(tx of g.graphData().nodes) {
-    //       if (tx.id.includes(event.target.value)) {
-    //           console.log("found")
-    //           g.centerAt(tx.x, tx.y, 1000);
-    //           g.zoom(8, 2000);
-    //       }
-    //     }
-    //   }
-    // });
 
   </script>
   <script src="https://unpkg.com/force-graph"></script>
